@@ -1,0 +1,53 @@
+name: build
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 7 * * *'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - id: tags
+        run: |
+          echo "tags=latest edge $(date +'%Y%m%d')" >> $GITHUB_OUTPUT
+      - run: |
+          sudo apt update -y
+          sudo apt install -y qemu-user-static
+      - uses: redhat-actions/buildah-build@v2
+        with:
+          image: pmos-toolbox
+          tags: ${{ steps.tags.outputs.tags }}
+          platforms: linux/amd64, linux/arm64
+          containerfiles: |
+            Containerfile
+      - name: quay.io
+        uses: redhat-actions/push-to-registry@v2
+        with:
+          image: pmos-toolbox
+          tags: ${{ steps.tags.outputs.tags }}
+          registry: quay.io/gmanka
+          username: gmankab
+          password: ${{ secrets.QUAY_TOKEN }}
+      - name: docker.io
+        uses: redhat-actions/push-to-registry@v2
+        with:
+          image: pmos-toolbox
+          tags: ${{ steps.tags.outputs.tags }}
+          registry: docker.io/gmanka
+          username: gmanka
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: ghcr.io
+        uses: redhat-actions/push-to-registry@v2
+        with:
+          image: pmos-toolbox
+          tags: ${{ steps.tags.outputs.tags }}
+          registry: ghcr.io/gmanka-containers
+          username: gmankab
+          password: ${{ secrets.GITHUB_TOKEN }}
+
