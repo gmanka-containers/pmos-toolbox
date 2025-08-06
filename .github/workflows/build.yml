@@ -11,43 +11,40 @@ jobs:
     permissions:
       contents: read
       packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - branch_alpine: edge
+            branch_pmos: edge
+          - branch_alpine: '3.21'
+            branch_pmos: v24.12
+            extra_tags: latest
+          - branch_alpine: '3.20'
+            branch_pmos: v24.06
+          - branch_alpine: '3.19'
+            branch_pmos: v23.12
+          - branch_alpine: '3.18'
+            branch_pmos: v23.06
     steps:
       - uses: actions/checkout@v4
-      - id: tags
-        run: |
-          echo "tags=latest edge $(date +'%Y%m%d')" >> $GITHUB_OUTPUT
       - run: |
           sudo apt update -y
           sudo apt install -y qemu-user-static
       - uses: redhat-actions/buildah-build@v2
         with:
           image: pmos-toolbox
-          tags: ${{ steps.tags.outputs.tags }}
-          platforms: linux/amd64, linux/arm64
-          containerfiles: |
-            Containerfile
+          tags: ${{ matrix.branch_pmos }} ${{ matrix.extra_tags }}
+          platforms: linux/amd64,linux/arm64
+          containerfiles: Containerfile
+          build-args: |
+            branch_alpine=${{ matrix.branch_alpine }}
+            branch_pmos=${{ matrix.branch_pmos }}
       - name: quay.io
         uses: redhat-actions/push-to-registry@v2
         with:
           image: pmos-toolbox
-          tags: ${{ steps.tags.outputs.tags }}
+          tags: ${{ matrix.branch_pmos }} ${{ matrix.extra_tags }}
           registry: quay.io/gmanka
           username: gmankab
           password: ${{ secrets.QUAY_TOKEN }}
-      - name: docker.io
-        uses: redhat-actions/push-to-registry@v2
-        with:
-          image: pmos-toolbox
-          tags: ${{ steps.tags.outputs.tags }}
-          registry: docker.io/gmanka
-          username: gmanka
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: ghcr.io
-        uses: redhat-actions/push-to-registry@v2
-        with:
-          image: pmos-toolbox
-          tags: ${{ steps.tags.outputs.tags }}
-          registry: ghcr.io/gmanka-containers
-          username: gmankab
-          password: ${{ secrets.GITHUB_TOKEN }}
-
