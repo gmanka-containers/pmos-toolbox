@@ -7,7 +7,7 @@
 - quay.io/gmanka/pmos-toolbox
 
 ### base image
-- quay.io/toolbx-images/alpine-toolbox:edge
+- quay.io/toolbx-images/alpine-toolbox
 
 ### how to use with toolbox
 
@@ -20,4 +20,3 @@ toolbox create --image quay.io/gmanka/pmos-toolbox
 ```shell
 distrobox create --image quay.io/gmanka/pmos-toolbox
 ```
-
