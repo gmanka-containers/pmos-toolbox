@@ -15,17 +15,17 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - branch_alpine: edge
-            branch_pmos: edge
+          - branch_alpine: 'edge'
+            branch_pmos: 'edge'
           - branch_alpine: '3.21'
-            branch_pmos: v24.12
-            extra_tags: latest
+            branch_pmos: '24.12'
+            extra_tags: 'latest'
           - branch_alpine: '3.20'
-            branch_pmos: v24.06
+            branch_pmos: '24.06'
           - branch_alpine: '3.19'
-            branch_pmos: v23.12
+            branch_pmos: '23.12'
           - branch_alpine: '3.18'
-            branch_pmos: v23.06
+            branch_pmos: '23.06'
     steps:
       - uses: actions/checkout@v4
       - run: |
